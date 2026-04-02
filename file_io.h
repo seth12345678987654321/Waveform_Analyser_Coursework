@@ -8,24 +8,25 @@
 #define MAX_FILE_COUNT 100
 
 
-typedef struct
+typedef struct dirFile
 { // Structure to hold information on a directory
-    short fileName;
+    char* fileName;
     struct dirFile *nextFile;
 } dirFile;
 
 typedef struct
 { // Structure to hold information on a directory
-    short length;   // Length of 'files' dynamic array
+    short length;   // Length of 'files' linked list
     short fileCounter;
-    dirFile *files;  // Pointers to char* strings containing the file name
+    dirFile *indexFile;  // Pointer to the index dirFile struct, linked list
+    dirFile *currentFile;  // Current file being accessed
 } dirList;
 
 
 // Checks if a file is readable
-int check_file();
+int check_file(char* file);
 
-void read_file(dirFile);
+void read_file(dirFile file);
 
 // Create a directory list structure
 dirList directory_list_create();

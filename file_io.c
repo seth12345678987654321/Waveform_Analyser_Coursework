@@ -6,22 +6,22 @@
 #include <stdlib.h>
 #include <dirent.h> // For directory operations
 #include <stdio.h>
+#include <string.h>
 
-directoryList directory_list_create()
+dirList directory_list_create()
 {
     dirList list;
     list.length=0;
     list.fileCounter=0;
-    list.files=NULL;
+    list.indexFile=NULL;
     return list;
 }
 
 int directory_read(dirList* list, char* path)
 {
-    DIR* dirstream;
     struct dirent* file;
+    DIR* dirstream = opendir(".");
 
-    dirstream=opendir(".");
     if (dirstream == NULL)
     {
         printf("ERROR: FILE-IO - directory_read: Failed to open directory\n");
@@ -30,12 +30,16 @@ int directory_read(dirList* list, char* path)
 
     char* files[MAX_FILE_COUNT];
     int counter = 0;
+    dirFile* prevFile = NULL;
+
     while ( (file = readdir(dirstream)) )
     {
-        counter+=1;
-        if (counter>MAX_FILE_COUNT)
-        {
 
+
+        if (counter>=MAX_FILE_COUNT)
+        {
+            printf("WARN: FILE-IO - directory_read: Exceeded file limit!\n", file->d_name);
+            break; // Do not process any more files
         }
         if (file->d_type!=DT_REG)
         { // Only include regular files and exclude other directories
@@ -50,7 +54,23 @@ int directory_read(dirList* list, char* path)
         }
         // Passed all checks!
 
-        // TODO: malloc and write linked list elements
+        dirFile* newFile = (dirFile*)malloc(sizeof(dirFile));
+        char* filename = strdup(file->d_name); // Duplicate the string in new memory location
+        newFile->fileName=filename;
+        if (counter==0)
+        {   // Index pointer should point to the first file
+            list->indexFile = newFile;
+        }else
+        {   // Previous file's pointer should point to the new file
+            prevFile->nextFile=newFile;
+        }
+        prevFile=newFile;
+        counter+=1;
     }
-    // TODO: return values
+    return 0;
+}
+
+int check_file(char* file)
+{
+    return 1;
 }
