@@ -5,13 +5,20 @@
 #include "console_io.h"
 
 #include <stdio.h>
+#include <string.h>
 
 
-void console_write(enum WRITE_TYPE type, char* location,char* message)
+int console_write_head(enum WRITE_TYPE type, char* location)
 {
+    char prefix[100];
+
     if (CONSOLE_PRINT_LOCATION !=1)
     {
-        location=NULL;
+        prefix[0] = '\0';
+    }else
+    {
+        strcpy(prefix,location);
+        strcat(prefix,CONSOLE_LOCATION_SUFFIX);
     }
 
     switch (type)
@@ -21,49 +28,58 @@ void console_write(enum WRITE_TYPE type, char* location,char* message)
         {
             console_modify(ANSI_BOLD);
             console_modify(ANSI_RED);
-            printf("ERROR | %s:", location);
+            printf("ERROR %s%s", CONSOLE_TYPE_SUFFIX, prefix);
             console_modify(ANSI_RESET);
-            printf(" %s\n", message);
+            return 1;
         }
-        return;
+        return 0;
     case WARN:
         if (CONSOLE_SHOW_WARN==1)
         {
             console_modify(ANSI_BOLD);
             console_modify(ANSI_YELLOW);
-            printf(" WARN | %s:", location);
+            printf(" WARN %s%s", CONSOLE_TYPE_SUFFIX, prefix);
             console_modify(ANSI_RESET);
-            printf(" %s\n", message);
+            return 1;
         }
-        return;
+        return 0;
     case INFO:
         if (CONSOLE_SHOW_INFO==1)
         {
             console_modify(ANSI_BOLD);
             console_modify(ANSI_CYAN);
-            printf(" INFO | %s:", location);
+            printf(" INFO %s%s", CONSOLE_TYPE_SUFFIX, prefix);
             console_modify(ANSI_RESET);
-            printf(" %s\n", message);
+            return 1;
         }
-        return;
+        return 0;
     case DEBUG:
         if (CONSOLE_SHOW_DEBUG==1)
         {
             console_modify(ANSI_BOLD);
             console_modify(ANSI_MAGENTA);
-            printf("DEBUG | %s:", location);
+            printf("DEBUG %s%s", CONSOLE_TYPE_SUFFIX, prefix);
             console_modify(ANSI_RESET);
-            printf(" %s\n", message);
+            return 1;
         }
-        return;
+        return 0;
 
     default:
         console_modify(ANSI_BOLD);
-        printf("  MSG | %s:", location);
+        printf("  MSG %s%s", CONSOLE_TYPE_SUFFIX, prefix);
         console_modify(ANSI_RESET);
-        printf(" %s\n", message);
+        return 1;
+    }
+    return 0;
+}
+void console_write(enum WRITE_TYPE type, char* location, char* message)
+{
+    if (console_write_head(type,location))
+    {
+        printf("%s\n", message);
     }
 }
+
 
 void console_modify(char* modifier)
 {

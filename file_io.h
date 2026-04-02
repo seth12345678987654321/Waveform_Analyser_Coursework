@@ -10,7 +10,7 @@
 
 typedef struct dirFile
 { // Structure to hold information on a directory
-    char* fileName;
+    char* filePath;
     struct dirFile *nextFile;
 } dirFile;
 
@@ -18,13 +18,14 @@ typedef struct
 { // Structure to hold information on a directory
     short length;   // Length of 'files' linked list
     short fileCounter;
+    char* path;
     dirFile *indexFile;  // Pointer to the index dirFile struct, linked list
     dirFile *currentFile;  // Current file being accessed
 } dirList;
 
 
 // Checks if a file is readable
-int check_file(char* file);
+int check_file(char* filepath);
 
 void read_file(dirFile file);
 
@@ -34,13 +35,20 @@ dirList directory_list_create();
 // Reads a directory and pushes file names to 'list'
 int directory_read(dirList* list, char* path);
 
-// Returns the next file to read
-char* directory_next_file(dirList list);
+// Writes the next file to read in 'filepath'
+int directory_next_file(dirList* list,char* filepath);
+
+int directory_start(dirList* list);
 
 // Returns 1 if the directory still has files to read
 int directory_not_complete(dirList list);
 
+
+
 // Frees the directory list struct from memory
 void free_directory_list(char* );
+
+// Concatenates separate file and path into a filepath
+void file_path_concat(char* filepath, char* path, char* file);
 
 #endif //WAVEFORM_ANALYSER_FILE_IO_H

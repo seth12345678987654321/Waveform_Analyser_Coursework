@@ -13,6 +13,9 @@
 #define CONSOLE_SHOW_INFO 1
 #define CONSOLE_PRINT_LOCATION 1
 
+#define CONSOLE_LOCATION_SUFFIX ": "
+#define CONSOLE_TYPE_SUFFIX "| "
+
 #define ANSI_RED     "\x1b[31m"
 #define ANSI_GREEN   "\x1b[32m"
 #define ANSI_YELLOW  "\x1b[33m"
@@ -31,6 +34,11 @@ enum WRITE_TYPE
     INFO,
 };
 
+// Writes a formatted message to the console
 void console_write(enum WRITE_TYPE type, char* location, char* message);
 
+// Only writes the head of the message. To be used with printf.
+int console_write_head(enum WRITE_TYPE type, char* location);
+
+// Prints a modifier
 void console_modify(char* modifier);
