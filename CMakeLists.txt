@@ -7,4 +7,6 @@ add_executable(waveform_analyser main.c
         file_io.c
         file_io.h
         console_io.c
-        console_io.h)
+        console_io.h
+        waveform.c
+        waveform.h)

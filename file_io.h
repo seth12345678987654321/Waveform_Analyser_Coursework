@@ -49,6 +49,6 @@ int directory_not_complete(dirList list);
 void free_directory_list(char* );
 
 // Concatenates separate file and path into a filepath
-void file_path_concat(char* filepath, char* path, char* file);
+void file_path_concat(char* filepath, const char* path, const char* file);
 
 #endif //WAVEFORM_ANALYSER_FILE_IO_H

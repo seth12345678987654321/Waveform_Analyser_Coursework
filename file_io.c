@@ -118,7 +118,7 @@ int check_file(char* filepath)
     return 0;
 }
 
-void file_path_concat(char* filepath, char* path, char* file)
+void file_path_concat(char* filepath, const char* path, const char* file)
 {
     strcpy(filepath, path);
     strcat(filepath, "/");
