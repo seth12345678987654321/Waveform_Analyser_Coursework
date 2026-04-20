@@ -34,7 +34,7 @@ Waveform* waveform_create(int size)
 
 void waveform_free(Waveform *waveform)
 {
-    free(waveform->waveform);
+    free(waveform->samples);
     free(waveform);
 }
 

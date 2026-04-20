@@ -6,10 +6,34 @@
 #define WAVEFORM_ANALYSER_FILE_IO_H
 
 #define MAX_FILE_COUNT 100
+#define FILE_SIZE_LIMIT 1000000
+#define LINE_BUFFER_SIZE 256
+#define CSV_ROW_DELIMITER '\n'
+#define CSV_COLUMN_DELIMITER ','
+
+typedef enum csvValueType
+{
+    STRING,
+    FLOAT
+}csvValueType;
+
+
+typedef struct csvRow
+{
+    short size;
+    double* data; // Pointer array of multiple types
+}csvRow;
+
+typedef struct csvFile
+{
+    short rowCount;
+    short columnCount;
+    csvRow* rows;
+}csvFile;
 
 
 typedef struct dirFile
-{ // Structure to hold information on a directory
+{ // Structure to hold information on a file
     char* filePath;
     struct dirFile *nextFile;
 } dirFile;
@@ -27,7 +51,7 @@ typedef struct
 // Checks if a file is readable
 int check_file(char* filepath);
 
-void read_file(dirFile file);
+int read_csv_file(csvFile* csv,char* filepath);
 
 // Create a directory list structure
 dirList directory_list_create();
