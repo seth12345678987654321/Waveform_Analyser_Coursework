@@ -18,17 +18,18 @@ typedef enum csvValueType
 }csvValueType;
 
 
-typedef struct csvRow
-{
-    short size;
-    double* data; // Pointer array of multiple types
-}csvRow;
+typedef struct csvData
+{   // 16 Bytes
+    int row;   // 4 Bytes
+    int column; // 4 Bytes
+    double data; // 8 Bytes, Pointer array of multiple types
+}csvData;
 
 typedef struct csvFile
 {
     short rowCount;
     short columnCount;
-    csvRow* rows;
+    csvData* data;
 }csvFile;
 
 
@@ -67,7 +68,14 @@ int directory_start(dirList* list);
 // Returns 1 if the directory still has files to read
 int directory_not_complete(dirList list);
 
+// Returns the pointer to a given CSV element, returns NULL if invalid
+csvData* csv_access(csvFile* csv, int column, int row);
 
+// Fetches the data from the CSV element and writes to val
+int csv_get(csvFile* csv, double* val, int column, int row);
+
+// Writes the data in val to the CSV element
+int csv_set(csvFile* csv, double* val, int column, int row);
 
 // Frees the directory list struct from memory
 void free_directory_list(char* );

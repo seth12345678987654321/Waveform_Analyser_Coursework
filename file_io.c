@@ -137,7 +137,31 @@ int directory_next_file(dirList* list, char* filepath)
     return 1;
 }
 
+csvData* csv_access(csvFile* csv,int column, int row)
+{
+    int position = (row * csv->columnCount) + column;
+    csvData* dataptr = csv->data + position;
+    if ( (dataptr->column != column)  || (dataptr->row != row) )
+    {
+        printf("\n"); console_write_head(ERROR, "CSV-ACCESS");
+        printf("Invalid access at 0x%p r=%d c=%d\n",dataptr,row,column);
+        console_write_head(ERROR, "CSV-ACCESS");
+        printf("  - target: r=%d c=%d\n",dataptr,row,column);
+        return NULL;
+    }
+    return dataptr;
+}
 
+int csv_get(csvFile* csv, double* val, int column, int row)
+{
+    csvData* dataptr;
+    if ( (dataptr = csv_access(csv,column,row)) != NULL )
+    {
+        *val = dataptr->data;
+        return 0;
+    }
+    return 1;
+}
 
 int read_csv_file(csvFile* csv,char* filepath)
 {
@@ -184,10 +208,18 @@ int read_csv_file(csvFile* csv,char* filepath)
     printf("Size: %ld ,Rows: %d\n", fileSize,fileRows);
 
     csv->rowCount=fileRows;
-    csv->rows=(csvRow*)malloc(fileRows * sizeof(csvRow*));
-    int fileColumns=9;// TODO IMPLEMENT COLUMN NUMBER SEARCH
+
+    int fileColumns=8;// TODO IMPLEMENT COLUMN NUMBER SEARCH
+    csv->data=(csvData*)malloc(fileRows * fileColumns * sizeof(csvData));
+
+    if (csv->data==NULL)
+    {
+        console_write(ERROR,"FILE-CSV-READ","Memory allocation failed, out of memory?");
+    }
+
     csv->columnCount=fileColumns;
     char linestr[LINE_BUFFER_SIZE];
+
     for (int line=0; line<fileRows; line++)
     {
         fgets(linestr, sizeof(linestr), fp);
@@ -195,7 +227,8 @@ int read_csv_file(csvFile* csv,char* filepath)
         char delimiter[2];
         delimiter[0]=CSV_COLUMN_DELIMITER;
         delimiter[1]='\0';
-        csv->rows[line].data=(double*)malloc(fileColumns * sizeof(double));;
+
+
         for (int i=0; i<fileColumns; i++)
         {
             char* token;
@@ -214,10 +247,12 @@ int read_csv_file(csvFile* csv,char* filepath)
             }
             if (1==1) // TODO implement number verification
             {
-                csv->rows[line].data[i]=strtod(token,NULL);
+                csv->data[(line*csv->columnCount)+i].data=strtod(token,NULL);
+                csv->data[(line*csv->columnCount)+i].column=i;
+                csv->data[(line*csv->columnCount)+i].row=line;
             }else
             {
-                csv->rows[line].data[i]=0;
+                csv->data[(line*csv->columnCount)+i].data=0;
                 // TODO Not a number error
             }
 

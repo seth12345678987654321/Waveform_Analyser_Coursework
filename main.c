@@ -16,9 +16,9 @@ int main(void)
         console_write_head(INFO,"MAIN");
         printf("%d %d\n",csv.rowCount,csv.columnCount);
         console_write_head(INFO,"MAIN");
-        for (int i=0;i>csv.columnCount;i++)
+        for (int i=0;i<csv.columnCount;i++)
         {
-            printf("%lf ",csv.rows[5].data[i]);
+            printf("%f ",csv_access(&csv,i,1)->data);
         }
         printf("\n");
 
