@@ -10,3 +10,5 @@ add_executable(waveform_analyser main.c
         console_io.h
         waveform.c
         waveform.h)
+
+target_link_libraries(waveform_analyser m)

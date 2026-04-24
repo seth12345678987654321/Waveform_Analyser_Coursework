@@ -52,6 +52,7 @@ typedef struct
 // Checks if a file is readable
 int check_file(char* filepath);
 
+// Reads a csv file and writes it to memory as an csvFile array
 int read_csv_file(csvFile* csv,char* filepath);
 
 // Create a directory list structure
@@ -72,10 +73,13 @@ int directory_not_complete(dirList list);
 csvData* csv_access(csvFile* csv, int column, int row);
 
 // Fetches the data from the CSV element and writes to val
-int csv_get(csvFile* csv, double* val, int column, int row);
+double csv_get(csvFile* csv, int column, int row);
 
 // Writes the data in val to the CSV element
 int csv_set(csvFile* csv, double* val, int column, int row);
+
+// Frees a CSV file from memory
+void csv_free(csvFile* csv);
 
 // Frees the directory list struct from memory
 void free_directory_list(char* );

@@ -4,7 +4,10 @@
 
 #ifndef WAVEFORM_ANALYSER_WAVEFORM_H
 #define WAVEFORM_ANALYSER_WAVEFORM_H
+
+
 #include <stdint.h>
+#include "file_io.h"
 
 #define VOLTAGE_TOLERANCE_LOW 207
 #define VOLTAGE_TOLERANCE_HIGH 253
@@ -24,8 +27,12 @@ typedef struct WaveformSample
     double frequency;
     double power_factor;
     double thd_percent;
-    uint8_t clipping:1;
-    uint8_t voltage_compliant:1;
+    uint8_t clipping_A:1;
+    uint8_t clipping_B:1;
+    uint8_t clipping_C:1;
+    uint8_t uncompliant_A:1;
+    uint8_t uncompliant_B:1;
+    uint8_t uncompliant_C:1;
 }WaveformSample;
 
 typedef struct Waveform{
@@ -37,11 +44,16 @@ typedef struct Waveform{
     double Voff_Phase_A;
     double Voff_Phase_B;
     double Voff_Phase_C;
+    double Vpp_Phase_A;
+    double Vpp_Phase_B;
+    double Vpp_Phase_C;
+    double Irms_current;
     double avg_power_factor;
     double avg_thd_percent;
     double max_thd_percent;
     double avg_frequency;
     int samples_clipped;
+    int samples_uncompliant;
 }Waveform;
 
 Waveform* waveform_create(int size);
@@ -49,8 +61,12 @@ Waveform* waveform_create(int size);
 void waveform_free(Waveform *waveform);
 // Frees the waveform from memory
 
-Waveform* waveform_sample_write();
 // Writes one sample of information
+Waveform* waveform_sample_write();
 
+// Converts a CSV file into a waveform
+int csv_to_waveform(Waveform* waveform, csvFile* csv);
+
+int waveform_process(Waveform* waveform);
 
 #endif //WAVEFORM_ANALYSER_WAVEFORM_H

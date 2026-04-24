@@ -152,15 +152,14 @@ csvData* csv_access(csvFile* csv,int column, int row)
     return dataptr;
 }
 
-int csv_get(csvFile* csv, double* val, int column, int row)
+double csv_get(csvFile* csv, int column, int row)
 {
     csvData* dataptr;
     if ( (dataptr = csv_access(csv,column,row)) != NULL )
     {
-        *val = dataptr->data;
-        return 0;
+        return dataptr->data;
     }
-    return 1;
+    return 0;
 }
 
 int read_csv_file(csvFile* csv,char* filepath)
@@ -260,6 +259,9 @@ int read_csv_file(csvFile* csv,char* filepath)
     }
 
     return 0;
+}
 
-
+void csv_free(csvFile* csv)
+{
+    free(csv->data);
 }

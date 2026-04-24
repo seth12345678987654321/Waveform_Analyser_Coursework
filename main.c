@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "console_io.h"
 #include "file_io.h"
+#include "waveform.h"
 
 int main(void)
 {
@@ -15,12 +16,19 @@ int main(void)
         read_csv_file(&csv,filepath);
         console_write_head(INFO,"MAIN");
         printf("%d %d\n",csv.rowCount,csv.columnCount);
+
+        Waveform* waveform =waveform_create(csv.rowCount-2);
+        csv_to_waveform(waveform,&csv);
+
+        waveform_process(waveform);
+
         console_write_head(INFO,"MAIN");
-        for (int i=0;i<csv.columnCount;i++)
-        {
-            printf("%f ",csv_access(&csv,i,1)->data);
-        }
+        printf("%f %f\n",waveform->Irms_current,waveform->Vrms_Phase_A);
+
         printf("\n");
+
+        csv_free(&csv);
+        waveform_free(waveform);
 
     }
     return 0;
