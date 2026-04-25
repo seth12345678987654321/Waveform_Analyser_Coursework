@@ -76,4 +76,6 @@ int csv_to_waveform(Waveform* waveform, csvFile* csv);
 
 int waveform_process(Waveform* waveform);
 
+txtFile* write_results(Waveform* waveform);
+
 #endif //WAVEFORM_ANALYSER_WAVEFORM_H

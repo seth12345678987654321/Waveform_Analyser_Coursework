@@ -5,7 +5,9 @@
 #include "waveform.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 Waveform* waveform_create(int size)
 {
@@ -132,8 +134,8 @@ int waveform_process(Waveform* waveform)
         PhaseB_Max = fmax(waveform->samples[i].phase_B,PhaseB_Max);
         PhaseC_Max = fmax(waveform->samples[i].phase_C,PhaseC_Max);
         PhaseA_Min = fmin(waveform->samples[i].phase_A,PhaseA_Min);
-        PhaseB_Min = fmax(waveform->samples[i].phase_B,PhaseB_Min);
-        PhaseC_Min = fmax(waveform->samples[i].phase_C,PhaseC_Min);
+        PhaseB_Min = fmin(waveform->samples[i].phase_B,PhaseB_Min);
+        PhaseC_Min = fmin(waveform->samples[i].phase_C,PhaseC_Min);
 
         // Sum for mean / DC offset calculation
         PhaseA_Sum = waveform->samples[i].phase_A;
@@ -217,4 +219,75 @@ int waveform_process(Waveform* waveform)
     waveform->std_deviation_A =  sqrt(waveform->variance_A);
     waveform->std_deviation_B =  sqrt(waveform->variance_B);
     waveform->std_deviation_C =  sqrt(waveform->variance_C);
+}
+
+
+
+
+txtFile* write_results(Waveform* waveform)
+{
+    char output[TXTFILE_BUFFER_SIZE];
+    //snprintf(output,TXTFILE_BUFFER_SIZE,
+    printf(
+        "WAVEFORM CAPTURE RESULTS\n"
+        "date time?\n"
+        "file name?\n"
+        "\n"
+        "Waveform Size: %i\n"
+        "\n"
+        "RMS Voltage\n"
+        " - Phase A: %.2fVrms\n"
+        " - Phase B: %.2fVrms\n"
+        " - Phase C: %.2fVrms\n"
+        "\n"
+        "DC Offset Voltage\n"
+        " - Phase A: %.3fV\n"
+        " - Phase B: %.3fV\n"
+        " - Phase C: %.3fV\n"
+        "\n"
+        "Peak to Peak Voltage\n"
+        " - Phase A: %.2fVpp\n"
+        " - Phase B: %.2fVpp\n"
+        " - Phase C: %.2fVpp\n"
+        "\n"
+        "Line Current: %.2fArms\n"
+        "Average Power Factor: %.2f%%\n"
+        "Average THD: %.2f%%\n"
+        "Maximum THD: %.2f%%\n"
+        "Average Frequency: %.3fHz\n"
+        "Samples Clipped: %d samples\n"
+
+        "Variance and Standard deviation\n"
+        " - Phase A: σ²=%.2f σ=%.2f\n"
+        " - Phase B: σ²=%.2f σ=%.2f\n"
+        " - Phase C: σ²=%.2f σ=%.2f\n",
+
+        waveform->waveform_size,
+        waveform->Vrms_Phase_A,
+        waveform->Vrms_Phase_B,
+        waveform->Vrms_Phase_C,
+        waveform->Voff_Phase_A,
+        waveform->Voff_Phase_B,
+        waveform->Voff_Phase_C,
+        waveform->Vpp_Phase_A,
+        waveform->Vpp_Phase_B,
+        waveform->Vpp_Phase_C,
+        waveform->Irms_current,
+        waveform->avg_power_factor,
+        waveform->avg_thd_percent,
+        waveform->max_thd_percent,
+        waveform->avg_frequency,
+        waveform->samples_clipped,
+        waveform->variance_A,
+        waveform->std_deviation_A,
+        waveform->variance_B,
+        waveform->std_deviation_B,
+        waveform->variance_C,
+        waveform->std_deviation_C
+    );
+    txtFile* file = malloc(sizeof(txtFile));
+    file->fileContents=malloc(sizeof(char)*strlen(output));
+    strcpy(file->fileContents,output);
+
+    return file;
 }

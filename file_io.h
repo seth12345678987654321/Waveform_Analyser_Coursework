@@ -7,6 +7,7 @@
 
 #define MAX_FILE_COUNT 100
 #define FILE_SIZE_LIMIT 1000000
+#define TXTFILE_BUFFER_SIZE 10000
 #define LINE_BUFFER_SIZE 256
 #define CSV_ROW_DELIMITER '\n'
 #define CSV_COLUMN_DELIMITER ','
@@ -39,7 +40,7 @@ typedef struct dirFile
     struct dirFile *nextFile;
 } dirFile;
 
-typedef struct
+typedef struct dirList
 { // Structure to hold information on a directory
     short length;   // Length of 'files' linked list
     short fileCounter;
@@ -48,6 +49,13 @@ typedef struct
     dirFile *currentFile;  // Current file being accessed
 } dirList;
 
+typedef struct txtFile
+{
+    short fileNameLength;
+    short fileSize;
+    char* fileName;
+    char* fileContents;
+}txtFile;
 
 // Checks if a file is readable
 int check_file(char* filepath);

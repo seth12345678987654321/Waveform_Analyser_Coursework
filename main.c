@@ -22,8 +22,7 @@ int main(void)
 
         waveform_process(waveform);
 
-        console_write_head(INFO,"MAIN");
-        printf("%f %f\n",waveform->variance_A,waveform->std_deviation_A);
+        write_results(waveform);
 
         printf("\n");
 
