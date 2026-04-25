@@ -33,6 +33,7 @@ typedef struct WaveformSample
     uint8_t uncompliant_A:1;
     uint8_t uncompliant_B:1;
     uint8_t uncompliant_C:1;
+
 }WaveformSample;
 
 typedef struct Waveform{
@@ -52,6 +53,12 @@ typedef struct Waveform{
     double avg_thd_percent;
     double max_thd_percent;
     double avg_frequency;
+    double std_deviation_A;
+    double std_deviation_B;
+    double std_deviation_C;
+    double variance_A;
+    double variance_B;
+    double variance_C;
     int samples_clipped;
     int samples_uncompliant;
 }Waveform;

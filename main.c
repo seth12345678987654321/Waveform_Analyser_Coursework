@@ -23,7 +23,7 @@ int main(void)
         waveform_process(waveform);
 
         console_write_head(INFO,"MAIN");
-        printf("%f %f\n",waveform->Irms_current,waveform->Vrms_Phase_A);
+        printf("%f %f\n",waveform->variance_A,waveform->std_deviation_A);
 
         printf("\n");
 

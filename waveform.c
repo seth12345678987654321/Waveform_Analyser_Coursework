@@ -199,4 +199,22 @@ int waveform_process(Waveform* waveform)
     waveform->Vpp_Phase_C=PhaseC_Max-PhaseC_Min;
 
 
+    double PhaseA_ACSum=0; // Sum of AC component, v(i)-Vdc
+    double PhaseB_ACSum=0;
+    double PhaseC_ACSum=0;
+
+    for (int i=0; i < size; i++)
+    {
+        PhaseA_ACSum += waveform->samples[i].phase_A - waveform->Voff_Phase_A;
+        PhaseB_ACSum += waveform->samples[i].phase_B - waveform->Voff_Phase_B;
+        PhaseC_ACSum += waveform->samples[i].phase_C - waveform->Voff_Phase_C;
+    }
+
+    waveform->variance_A = pow(PhaseA_ACSum,2) / size;
+    waveform->variance_B = pow(PhaseB_ACSum,2) / size;
+    waveform->variance_C = pow(PhaseC_ACSum,2) / size;
+
+    waveform->std_deviation_A =  sqrt(waveform->variance_A);
+    waveform->std_deviation_B =  sqrt(waveform->variance_B);
+    waveform->std_deviation_C =  sqrt(waveform->variance_C);
 }
