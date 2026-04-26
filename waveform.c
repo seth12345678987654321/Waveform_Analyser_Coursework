@@ -4,10 +4,12 @@
 
 #include "waveform.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 Waveform* waveform_create(int size)
 {
@@ -25,8 +27,9 @@ Waveform* waveform_create(int size)
     waveform->avg_power_factor=0;
     waveform->avg_thd_percent=0;
     waveform->max_thd_percent=0;
-    waveform->samples_clipped=0;
-    waveform->samples_uncompliant=0;
+    waveform->samples_clipped_phaseA=0;
+    waveform->samples_clipped_phaseB=0;
+    waveform->samples_clipped_phaseC=0;
     waveform->Irms_current=0;
     for (int i=0;i<size;i++)
     {
@@ -70,7 +73,7 @@ int csv_to_waveform(Waveform* waveform, csvFile* csv)
 
 
 
-int is_clipping(double voltage)
+int is_clipping(const double voltage)
 {
     if (voltage>=CLIPPING_THRESHOLD)
     {
@@ -123,7 +126,10 @@ int waveform_process(Waveform* waveform)
     int PhaseB_out_of_tolerance=0;
     int PhaseC_out_of_tolerance=0;
 
-
+    double Frequency_sum=0;
+    double THD_Sum=0;
+    double THD_Max=0;
+    double Power_Factor_Sum=0;
 
     int size = waveform->waveform_size;
     for (int i=0; i < size; i++)
@@ -184,12 +190,21 @@ int waveform_process(Waveform* waveform)
             PhaseC_out_of_tolerance+=1;
             waveform->samples[i].uncompliant_C=1;
         }
+
+        Power_Factor_Sum+=waveform->samples[i].power_factor;
+        THD_Sum+=waveform->samples[i].thd_percent;
+        THD_Max=fmax(waveform->samples[i].thd_percent,THD_Max);
+        Frequency_sum+=waveform->samples[i].frequency;
     }
 
     waveform->Irms_current=sqrt(Current_SquareSum/size);
     waveform->Vrms_Phase_A=sqrt(PhaseA_SquareSum/size);
     waveform->Vrms_Phase_B=sqrt(PhaseB_SquareSum/size);
     waveform->Vrms_Phase_C=sqrt(PhaseC_SquareSum/size);
+
+    waveform->samples_clipped_phaseA=PhaseA_clipping_events;
+    waveform->samples_clipped_phaseB=PhaseB_clipping_events;
+    waveform->samples_clipped_phaseC=PhaseC_clipping_events;
 
 
     waveform->Voff_Phase_A=PhaseA_Sum/size;
@@ -200,6 +215,11 @@ int waveform_process(Waveform* waveform)
     waveform->Vpp_Phase_B=PhaseB_Max-PhaseB_Min;
     waveform->Vpp_Phase_C=PhaseC_Max-PhaseC_Min;
 
+    waveform->avg_frequency=Frequency_sum/size;
+    waveform->avg_thd_percent=THD_Sum/size;
+    waveform->max_thd_percent=THD_Max;
+
+    waveform->avg_power_factor=Power_Factor_Sum/size;
 
     double PhaseA_ACSum=0; // Sum of AC component, v(i)-Vdc
     double PhaseB_ACSum=0;
@@ -219,20 +239,25 @@ int waveform_process(Waveform* waveform)
     waveform->std_deviation_A =  sqrt(waveform->variance_A);
     waveform->std_deviation_B =  sqrt(waveform->variance_B);
     waveform->std_deviation_C =  sqrt(waveform->variance_C);
+
+
+
+    return 0;
 }
 
 
 
 
-txtFile* write_results(Waveform* waveform)
+txtFile* write_results(Waveform* waveform,char* filename,char* reportname)
 {
+    time_t currentTime;
+    time(&currentTime);
     char output[TXTFILE_BUFFER_SIZE];
-    //snprintf(output,TXTFILE_BUFFER_SIZE,
-    printf(
-        "WAVEFORM CAPTURE RESULTS\n"
-        "date time?\n"
-        "file name?\n"
-        "\n"
+    snprintf(output,TXTFILE_BUFFER_SIZE,
+    //printf(
+        "-=- WAVEFORM CAPTURE REPORT-=-\n"
+        "Date: %s"
+        "Waveform File: %s\n"
         "Waveform Size: %i\n"
         "\n"
         "RMS Voltage\n"
@@ -255,13 +280,19 @@ txtFile* write_results(Waveform* waveform)
         "Average THD: %.2f%%\n"
         "Maximum THD: %.2f%%\n"
         "Average Frequency: %.3fHz\n"
-        "Samples Clipped: %d samples\n"
-
+        "\n"
+        "Samples Clipped\n"
+        " - Phase A: %d samples\n"
+        " - Phase B: %d samples\n"
+        " - Phase C: %d samples\n"
+        "\n"
         "Variance and Standard deviation\n"
         " - Phase A: σ²=%.2f σ=%.2f\n"
         " - Phase B: σ²=%.2f σ=%.2f\n"
         " - Phase C: σ²=%.2f σ=%.2f\n",
 
+        ctime(&currentTime),
+        reportname,
         waveform->waveform_size,
         waveform->Vrms_Phase_A,
         waveform->Vrms_Phase_B,
@@ -277,7 +308,9 @@ txtFile* write_results(Waveform* waveform)
         waveform->avg_thd_percent,
         waveform->max_thd_percent,
         waveform->avg_frequency,
-        waveform->samples_clipped,
+        waveform->samples_clipped_phaseA,
+        waveform->samples_clipped_phaseB,
+        waveform->samples_clipped_phaseC,
         waveform->variance_A,
         waveform->std_deviation_A,
         waveform->variance_B,
@@ -285,9 +318,17 @@ txtFile* write_results(Waveform* waveform)
         waveform->variance_C,
         waveform->std_deviation_C
     );
+
     txtFile* file = malloc(sizeof(txtFile));
-    file->fileContents=malloc(sizeof(char)*strlen(output));
+
+    file->fileContents=malloc(sizeof(char)*(strlen(output)+2));
     strcpy(file->fileContents,output);
+    file->fileSize=(short)strlen(output);
+
+    file->fileName=malloc(sizeof(char)*(strlen(filename)+2));
+    strcpy(file->fileName,filename);
+    file->fileNameLength=(short)strlen(filename);
 
     return file;
 }
+

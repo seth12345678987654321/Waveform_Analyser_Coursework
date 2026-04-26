@@ -11,6 +11,16 @@
 #define LINE_BUFFER_SIZE 256
 #define CSV_ROW_DELIMITER '\n'
 #define CSV_COLUMN_DELIMITER ','
+#define FILEPATH_BUFFER_SIZE 256
+#define CSV_NON_DATA_ROWS 2
+
+#if defined(__unix__) || defined(linux)
+#define FILEPATH_SEPARATOR "/"
+#elif defined(_WIN32) || defined(WIN32)
+#define FILEPATH_SEPARATOR "\\"
+#else
+#define OS_NOT_FOUND
+#endif
 
 typedef enum csvValueType
 {
@@ -37,6 +47,7 @@ typedef struct csvFile
 typedef struct dirFile
 { // Structure to hold information on a file
     char* filePath;
+    char* fileName;
     struct dirFile *nextFile;
 } dirFile;
 
@@ -46,7 +57,8 @@ typedef struct dirList
     short fileCounter;
     char* path;
     dirFile *indexFile;  // Pointer to the index dirFile struct, linked list
-    dirFile *currentFile;  // Current file being accessed
+    dirFile *nextFile;  // Next file to be accessed
+    dirFile *currentFile;
 } dirList;
 
 typedef struct txtFile
@@ -94,5 +106,11 @@ void free_directory_list(char* );
 
 // Concatenates separate file and path into a filepath
 void file_path_concat(char* filepath, const char* path, const char* file);
+
+// Writes data in a txtFile struct
+int txt_write(txtFile* file);
+
+// Frees a TXT file from memory
+void txt_free(txtFile* file);
 
 #endif //WAVEFORM_ANALYSER_FILE_IO_H

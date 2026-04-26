@@ -59,8 +59,12 @@ typedef struct Waveform{
     double variance_A;
     double variance_B;
     double variance_C;
-    int samples_clipped;
-    int samples_uncompliant;
+    int samples_clipped_phaseA;
+    int samples_clipped_phaseB;
+    int samples_clipped_phaseC;
+    int phaseA_compliant:1;
+    int phaseB_compliant:1;
+    int phaseC_compliant:1;
 }Waveform;
 
 Waveform* waveform_create(int size);
@@ -76,6 +80,6 @@ int csv_to_waveform(Waveform* waveform, csvFile* csv);
 
 int waveform_process(Waveform* waveform);
 
-txtFile* write_results(Waveform* waveform);
+txtFile* write_results(Waveform* waveform, char* filename, char* reportname);
 
 #endif //WAVEFORM_ANALYSER_WAVEFORM_H

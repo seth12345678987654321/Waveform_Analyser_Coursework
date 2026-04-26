@@ -17,12 +17,14 @@ dirList directory_list_create()
     list.fileCounter=0;
     list.indexFile=NULL;
     list.path=NULL;
-    list.currentFile=NULL;
+    list.nextFile=NULL;
     return list;
 }
 
 int directory_read(dirList* list, char* path)
 {
+    list->path=strdup(path);
+
     struct dirent* file;
     DIR* dirstream = opendir(path);
 
@@ -32,8 +34,8 @@ int directory_read(dirList* list, char* path)
 
     if (dirstream == NULL)
     {
-        printf("ERROR: FILE-IO - directory_read: Failed to open directory\n");
-        return 1;
+        console_write(ERROR,"DIR-READ","Could not find the given directory.");
+        exit(1);
     }
 
     char* files[MAX_FILE_COUNT];
@@ -55,11 +57,19 @@ int directory_read(dirList* list, char* path)
         { // Only include regular files and exclude other directories
             if (strcmp(file->d_name,".")==0){continue;} // Ignore these filenames
             if (strcmp(file->d_name,"..")==0){continue;}
-            if (console_write_head(WARN,"DIR-READ")){
-                printf("File '%s' is not a regular file\n", file->d_name);
+            if (console_write_head(DEBUG,"DIR-READ")){
+                printf("Skipping, File '%s' is not a regular file\n", file->d_name);
             }
             continue;
         }
+        if (strstr(file->d_name,".csv")==NULL)
+        { // Only include regular files and exclude other directories
+            if (console_write_head(DEBUG,"DIR-READ")){
+                printf("Skipping, File '%s' is not a csv file\n", file->d_name);
+            }
+            continue;
+        }
+
         console_write(DEBUG, "DIR-READ", "1");
         char filepath[256];
         file_path_concat(filepath, path, file->d_name);
@@ -76,6 +86,7 @@ int directory_read(dirList* list, char* path)
         dirFile* newFile = (dirFile*)malloc(sizeof(dirFile));
         newFile->filePath=strdup(filepath);
         newFile->nextFile=NULL;
+        newFile->fileName=file->d_name;
         if (counter==0)
         {   // Index pointer should point to the first file
             console_write(DEBUG, "DIR-READ", "First File");
@@ -87,6 +98,11 @@ int directory_read(dirList* list, char* path)
         }
         prevFile=newFile;
         counter+=1;
+    }
+    if (counter==0)
+    {
+        console_write(ERROR, "DIR-READ", "No csv files found!");
+        exit(1);
     }
     return 0;
 }
@@ -100,7 +116,7 @@ int directory_start(dirList* list)
     }
     list->fileCounter=1;
     console_write(DEBUG, "DIR-START", "File pointer returned to index;");
-    list->currentFile=list->indexFile;
+    list->nextFile=list->indexFile;
     return 0;
 }
 
@@ -121,19 +137,20 @@ int check_file(char* filepath)
 void file_path_concat(char* filepath, const char* path, const char* file)
 {
     strcpy(filepath, path);
-    strcat(filepath, "/");
+    strcat(filepath, FILEPATH_SEPARATOR);
     strcat(filepath, file);
 }
 
 int directory_next_file(dirList* list, char* filepath)
 {
-    if (list->currentFile==NULL){return 0;}
+    if (list->nextFile==NULL){return 0;}
     if (list->fileCounter>=MAX_FILE_COUNT){return 0;}
-    strcpy(filepath,list->currentFile->filePath);
+    strcpy(filepath,list->nextFile->filePath);
     list->fileCounter+=1;
+    list->currentFile = list->nextFile;
+    dirFile *next = list->nextFile->nextFile;
+    list->nextFile=next;
 
-    dirFile *next = list->currentFile->nextFile;
-    list->currentFile=next;
     return 1;
 }
 
@@ -143,10 +160,13 @@ csvData* csv_access(csvFile* csv,int column, int row)
     csvData* dataptr = csv->data + position;
     if ( (dataptr->column != column)  || (dataptr->row != row) )
     {
-        printf("\n"); console_write_head(ERROR, "CSV-ACCESS");
-        printf("Invalid access at 0x%p r=%d c=%d\n",dataptr,row,column);
-        console_write_head(ERROR, "CSV-ACCESS");
-        printf("  - target: r=%d c=%d\n",dataptr,row,column);
+        if (console_write_head(ERROR, "CSV-ACCESS"))
+        {
+            printf("Invalid access at 0x%p r=%d c=%d\n",dataptr,row,column);
+            console_write_head(ERROR, "CSV-ACCESS");
+            printf("  - target: r=%d c=%d\n",dataptr,row,column);
+            printf("\n");
+        }
         return NULL;
     }
     return dataptr;
@@ -168,8 +188,11 @@ int read_csv_file(csvFile* csv,char* filepath)
     FILE* fp = fopen(filepath,"r");
     if (fp == NULL)
     {
-        console_write_head(ERROR, "FILE-CSV-READ");
-        printf("Could not open file '%s'\n", filepath);
+        if (console_write_head(ERROR, "FILE-CSV-READ"))
+        {
+            printf("Could not open file '%s'\n", filepath);
+        }
+
         return 1;
     }
     console_write(DEBUG, "FILE-CSV-READ","seeking");
@@ -178,14 +201,19 @@ int read_csv_file(csvFile* csv,char* filepath)
     rewind(fp);                     // Return to the start of the file
     if (fileSize==0)
     {   // File is empty
-        console_write_head(ERROR, "FILE-CSV-READ");
-        printf("File is empty! '%s'\n", filepath);
+        if (console_write_head(ERROR, "FILE-CSV-READ"))
+        {
+            printf("File is empty! '%s'\n", filepath);
+        }
+
         return 1;
     }
     if (fileSize>=FILE_SIZE_LIMIT)
     {   // File is too large
-        console_write_head(ERROR, "FILE-CSV-READ");
-        printf("File size exceeds limit! '%s'\n", filepath);
+        if (console_write_head(ERROR, "FILE-CSV-READ"))
+        {
+            printf("File size exceeds limit! '%s'\n", filepath);
+        }
         return 1;
     }
     int fileRows = 1;
@@ -202,9 +230,11 @@ int read_csv_file(csvFile* csv,char* filepath)
         console_write(WARN, "FILE-CSV-READ", "Not many rows");
     }
     rewind(fp);
-    console_write(DEBUG, "FILE-CSV-READ","findrows");
-    console_write_head(DEBUG, "FILE-CSV-READ");
-    printf("Size: %ld ,Rows: %d\n", fileSize,fileRows);
+
+    if (console_write_head(DEBUG, "FILE-CSV-READ"))
+    {
+        printf("Size: %ld ,Rows: %d\n", fileSize,fileRows);
+    }
 
     csv->rowCount=fileRows;
 
@@ -241,7 +271,7 @@ int read_csv_file(csvFile* csv,char* filepath)
             }
             if (token==NULL)
             {
-                console_write(WARN,"FILE-CSV-READ","Null Token");
+                console_write(WARN,"FILE-CSV-READ","Ignoring empty element (null token)");
                 break;
             }
             if (1==1) // TODO implement number verification
@@ -264,4 +294,28 @@ int read_csv_file(csvFile* csv,char* filepath)
 void csv_free(csvFile* csv)
 {
     free(csv->data);
+}
+
+int txt_write(txtFile* file)
+{
+    FILE* fptr;
+
+    fptr = fopen(file->fileName, "w");
+    if (fptr==NULL)
+    {
+        if (console_write_head(ERROR, "TXT-WRITE"))
+        {
+            printf("Could not open file %s\n",file->fileName);
+        }
+        return 1;
+    }
+    fwrite(file->fileContents,sizeof(char),file->fileSize,fptr);
+    return 0;
+}
+
+void txt_free(txtFile* file)
+{
+    free(file->fileContents);
+    free(file->fileName);
+    free(file);
 }
