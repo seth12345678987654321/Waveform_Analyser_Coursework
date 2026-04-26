@@ -86,7 +86,7 @@ int directory_read(dirList* list, char* path)
         dirFile* newFile = (dirFile*)malloc(sizeof(dirFile));
         newFile->filePath=strdup(filepath);
         newFile->nextFile=NULL;
-        newFile->fileName=file->d_name;
+        newFile->fileName=strdup(file->d_name);
         if (counter==0)
         {   // Index pointer should point to the first file
             console_write(DEBUG, "DIR-READ", "First File");
@@ -104,6 +104,9 @@ int directory_read(dirList* list, char* path)
         console_write(ERROR, "DIR-READ", "No csv files found!");
         exit(1);
     }
+
+    free(file);
+    free(dirstream);
     return 0;
 }
 
@@ -294,6 +297,7 @@ int read_csv_file(csvFile* csv,char* filepath)
 void csv_free(csvFile* csv)
 {
     free(csv->data);
+    csv->data=NULL;
 }
 
 int txt_write(txtFile* file)
@@ -316,6 +320,30 @@ int txt_write(txtFile* file)
 void txt_free(txtFile* file)
 {
     free(file->fileContents);
+    file->fileContents = NULL;
     free(file->fileName);
+    file->fileName = NULL;
     free(file);
+    file = NULL;
+}
+
+
+void directory_free(dirList* dir)
+{
+    dirFile* currentFile = dir->indexFile;
+    dirFile* nextFile;
+    while(currentFile!=NULL)
+    {
+        nextFile=currentFile->nextFile;
+        free(currentFile->fileName);
+        free(currentFile->filePath);
+        currentFile->fileName=NULL;
+        currentFile->filePath=NULL;
+        free(currentFile);
+        currentFile=NULL;
+        currentFile=nextFile;
+    }
+    free(dir->path);
+    dir->path=NULL;
+
 }

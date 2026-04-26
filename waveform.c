@@ -53,7 +53,9 @@ Waveform* waveform_create(int size)
 void waveform_free(Waveform *waveform)
 {
     free(waveform->samples);
+    waveform->samples = NULL;
     free(waveform);
+    waveform = NULL;
 }
 
 int csv_to_waveform(Waveform* waveform, csvFile* csv)

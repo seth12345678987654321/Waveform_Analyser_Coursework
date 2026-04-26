@@ -69,11 +69,12 @@ typedef struct txtFile
     char* fileContents;
 }txtFile;
 
+
+
+// DIRECTORY FUNCTIONS  ------------------------------------------
+
 // Checks if a file is readable
 int check_file(char* filepath);
-
-// Reads a csv file and writes it to memory as an csvFile array
-int read_csv_file(csvFile* csv,char* filepath);
 
 // Create a directory list structure
 dirList directory_list_create();
@@ -84,13 +85,27 @@ int directory_read(dirList* list, char* path);
 // Writes the next file to read in 'filepath'
 int directory_next_file(dirList* list,char* filepath);
 
+// Returns the directory list to the index file
 int directory_start(dirList* list);
 
 // Returns 1 if the directory still has files to read
 int directory_not_complete(dirList list);
 
+// Frees the directory list struct from memory
+void directory_free(dirList* dir);
+
+// Concatenates separate file and path into a filepath
+void file_path_concat(char* filepath, const char* path, const char* file);
+
+
+
+// CSV FUNCTIONS  ------------------------------------------
+
 // Returns the pointer to a given CSV element, returns NULL if invalid
 csvData* csv_access(csvFile* csv, int column, int row);
+
+// Reads a csv file and writes it to memory as an csvFile array
+int read_csv_file(csvFile* csv,char* filepath);
 
 // Fetches the data from the CSV element and writes to val
 double csv_get(csvFile* csv, int column, int row);
@@ -101,16 +116,16 @@ int csv_set(csvFile* csv, double* val, int column, int row);
 // Frees a CSV file from memory
 void csv_free(csvFile* csv);
 
-// Frees the directory list struct from memory
-void free_directory_list(char* );
 
-// Concatenates separate file and path into a filepath
-void file_path_concat(char* filepath, const char* path, const char* file);
+
+// TXT FUNCTIONS ------------------------------------------
 
 // Writes data in a txtFile struct
 int txt_write(txtFile* file);
 
 // Frees a TXT file from memory
 void txt_free(txtFile* file);
+
+
 
 #endif //WAVEFORM_ANALYSER_FILE_IO_H
