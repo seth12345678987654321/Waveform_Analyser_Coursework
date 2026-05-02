@@ -7,7 +7,10 @@
 #include "file_io.h"
 #include "waveform.h"
 
-#define TARGET_DIR "/home/seth/Desktop/test"
+#define TARGET_DIR "/home/seth/Desktop/test" // Directory to search
+
+#define REPORT_NAME "report "
+#define REPORT_EXT "txt"
 
 int main(void)
 {
@@ -25,8 +28,11 @@ int main(void)
 
     while (directory_next_file(&dir,filepath))  // Go to the next file if there is one
     {
-        console_write(INFO,"MAIN","Reading file");
-        console_write(INFO,"MAIN",filepath);
+        if (console_write_head(INFO,"MAIN")==1)
+        {
+            printf("Reading file: '%s'\n",filepath);
+        }
+
 
         csvFile csv;
         read_csv_file(&csv,filepath);   // Turns the CSV file on disk into a struct
@@ -42,7 +48,7 @@ int main(void)
 
         strcat(reportfile,dir.path);
         strcat(reportfile,FILEPATH_SEPARATOR);
-        sprintf(buffer,"report %d.txt",count);   // Creates a file name for the report
+        sprintf(buffer,"%s%d.%s",REPORT_NAME,count,REPORT_EXT);   // Creates a file name for the report
         strcat(reportfile,buffer);
 
         // Writes the report into a text file struct
@@ -50,7 +56,10 @@ int main(void)
 
         if (txt_write(txt_file)==0) // Write the text file to disk
         {
-            console_write(INFO,"MAIN","Report written successfully\n");
+            if (console_write_head(INFO,"MAIN")==1)
+            {
+                printf("Report '%s' written successfully.\n\n",reportfile);
+            }
         }else
         {
             console_write(ERROR,"MAIN","Report could not be written to the disk\n");

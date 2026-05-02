@@ -76,9 +76,9 @@ void waveform_free(Waveform *waveform);
 Waveform* waveform_sample_write();
 
 // Converts a CSV file into a waveform
-int csv_to_waveform(Waveform* waveform, csvFile* csv);
+void csv_to_waveform(Waveform* waveform, csvFile* csv);
 
-int waveform_process(Waveform* waveform);
+void waveform_process(Waveform* waveform);
 
 txtFile* write_results(Waveform* waveform, char* filename, char* reportname);
 

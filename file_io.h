@@ -13,6 +13,9 @@
 #define CSV_COLUMN_DELIMITER ','
 #define FILEPATH_BUFFER_SIZE 256
 #define CSV_NON_DATA_ROWS 2
+#define CSV_COLUMNS 8
+#define ROWS_WARNING_LIMIT 5
+
 
 #if defined(__unix__) || defined(linux)
 #define FILEPATH_SEPARATOR "/"
@@ -21,12 +24,6 @@
 #else
 #define OS_NOT_FOUND
 #endif
-
-typedef enum csvValueType
-{
-    STRING,
-    FLOAT
-}csvValueType;
 
 
 typedef struct csvData

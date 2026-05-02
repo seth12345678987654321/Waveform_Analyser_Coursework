@@ -58,7 +58,7 @@ void waveform_free(Waveform *waveform)
     waveform = NULL;
 }
 
-int csv_to_waveform(Waveform* waveform, csvFile* csv)
+void csv_to_waveform(Waveform* waveform, csvFile* csv)
 {
     for (int i=1; i < csv->rowCount-1; i++)
     {
@@ -72,7 +72,6 @@ int csv_to_waveform(Waveform* waveform, csvFile* csv)
         waveform->samples[i-1].thd_percent  = csv_get(csv,7,i);
     }
 }
-
 
 
 int is_clipping(const double voltage)
@@ -102,7 +101,7 @@ int is_tolerant(double voltage)
     return 0;
 }
 
-int waveform_process(Waveform* waveform)
+void waveform_process(Waveform* waveform)
 {
     double PhaseA_Max=0;
     double PhaseB_Max=0;
@@ -241,10 +240,6 @@ int waveform_process(Waveform* waveform)
     waveform->std_deviation_A =  sqrt(waveform->variance_A);
     waveform->std_deviation_B =  sqrt(waveform->variance_B);
     waveform->std_deviation_C =  sqrt(waveform->variance_C);
-
-
-
-    return 0;
 }
 
 
