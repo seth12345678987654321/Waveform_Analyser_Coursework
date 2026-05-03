@@ -7,7 +7,7 @@
 #include "file_io.h"
 #include "waveform.h"
 
-#define TARGET_DIR "/home/seth/Desktop/test" // Directory to search
+#define TARGET_DIR "" // Directory to search
 
 #define REPORT_NAME "report "
 #define REPORT_EXT "txt"

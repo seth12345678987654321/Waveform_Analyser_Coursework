@@ -14,7 +14,6 @@
 #define THD_ELEVATED 5
 #define THD_EXCESSIVE 8
 #define DC_OFFSET_LIMIT 0.1
-#define DC_OFFSET_LIMIT 0.1
 #define CLIPPING_THRESHOLD 324.9
 
 typedef struct WaveformSample
