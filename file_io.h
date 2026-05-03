@@ -30,7 +30,7 @@ typedef struct csvData
 {   // 16 Bytes
     int row;   // 4 Bytes
     int column; // 4 Bytes
-    double data; // 8 Bytes, Pointer array of multiple types
+    double data; // 8 Bytes
 }csvData;
 
 typedef struct csvFile
@@ -53,9 +53,9 @@ typedef struct dirList
     short length;   // Length of 'files' linked list
     short fileCounter;
     char* path;
-    dirFile *indexFile;  // Pointer to the index dirFile struct, linked list
-    dirFile *nextFile;  // Next file to be accessed
-    dirFile *currentFile;
+    dirFile *indexFile;   // Pointer to the index dirFile struct, linked list
+    dirFile *nextFile;    // Next file to be accessed
+    dirFile *currentFile; // Current file being accessed
 } dirList;
 
 typedef struct txtFile
