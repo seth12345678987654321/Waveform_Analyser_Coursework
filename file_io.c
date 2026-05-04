@@ -51,6 +51,7 @@ int directory_read(dirList* list, char* path)
             console_write(WARN, "DIR-READ", "Exceeded file limit!");
             break; // Do not process any more files
         }
+#if defined(__unix__) || defined(linux) // NOT SUPPORTED ON WINDOWS
         if (file->d_type!=DT_REG)
         { // Only include regular files and exclude other directories
             if (strcmp(file->d_name,".")==0){continue;} // Ignore these filenames
@@ -60,6 +61,7 @@ int directory_read(dirList* list, char* path)
             }
             continue;
         }
+#endif
         if (strstr(file->d_name,".csv")==NULL)
         { // Only include regular files and exclude other directories
             if (console_write_head(DEBUG,"DIR-READ")){
